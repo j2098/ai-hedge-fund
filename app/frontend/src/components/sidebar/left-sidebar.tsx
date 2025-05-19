@@ -9,6 +9,7 @@ import { PanelLeft } from 'lucide-react';
 import { ReactNode } from 'react';
 import { ComponentGroupItem } from './component-group';
 import { SearchBox } from './search-box';
+import { SidebarFooter } from './sidebar-footer';
 
 interface LeftSidebarProps {
   children?: ReactNode;
@@ -24,14 +25,14 @@ export function LeftSidebar({
 }: LeftSidebarProps) {
   // Use our custom hooks
   const { width, isDragging, elementRef, startResize } = useResizable();
-  const { 
-    searchQuery, 
-    setSearchQuery, 
-    activeItem, 
-    openGroups, 
+  const {
+    searchQuery,
+    setSearchQuery,
+    activeItem,
+    openGroups,
     filteredGroups,
-    handleItemClick, 
-    handleAccordionChange 
+    handleItemClick,
+    handleAccordionChange
   } = useComponentGroups(componentGroups);
   const { addNodeFromComponent } = useFlowContext();
 
@@ -40,16 +41,16 @@ export function LeftSidebar({
   };
 
   return (
-    <div 
+    <div
       ref={elementRef}
       className={cn(
         "h-full bg-ramp-grey-800 flex flex-col relative",
         isCollapsed ? "shadow-lg" : "",
         isDragging ? "select-none" : ""
       )}
-      style={{ 
+      style={{
         width: `${width}px`,
-        borderRight: isDragging ? 'none' : '1px solid var(--ramp-grey-900)' 
+        borderRight: isDragging ? 'none' : '1px solid var(--ramp-grey-900)'
       }}
     >
       <div className="p-2 flex justify-between flex-shrink-0 items-center border-b border-ramp-grey-700 mt-4">
@@ -66,22 +67,22 @@ export function LeftSidebar({
           </Button>
         </div>
       </div>
-      
+
       <div className="flex-grow overflow-auto text-white scrollbar-thin scrollbar-thumb-ramp-grey-700">
-        <SearchBox 
-          value={searchQuery} 
-          onChange={setSearchQuery} 
+        <SearchBox
+          value={searchQuery}
+          onChange={setSearchQuery}
         />
-        
-        <Accordion 
-          type="multiple" 
-          className="w-full" 
-          value={openGroups} 
+
+        <Accordion
+          type="multiple"
+          className="w-full"
+          value={openGroups}
           onValueChange={handleAccordionChange}
         >
           {filteredGroups.map(group => (
             <ComponentGroupItem
-              key={group.name} 
+              key={group.name}
               group={group}
               activeItem={activeItem}
               onItemClick={handleItemClick}
@@ -96,14 +97,17 @@ export function LeftSidebar({
           </div>
         )}
       </div>
-      
+
+      {/* Sidebar Footer with Moomoo Connect */}
+      <SidebarFooter />
+
       {/* Resize handle - completely hidden during dragging */}
       {!isDragging && (
-        <div 
+        <div
           className="absolute top-0 right-0 h-full w-1 cursor-ew-resize transition-all duration-150 z-10"
           onMouseDown={startResize}
         />
       )}
     </div>
   );
-} 
+}
