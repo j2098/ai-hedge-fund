@@ -23,7 +23,7 @@ elif api_provider_name == "financial_datasets":
 
 # Get the appropriate API handler
 api_handler = ApiFactory.get_handler(api_provider)
-print(f"Using API provider: {api_provider}")
+print(f"\n\033[92mINFO\033[0m: Using API provider: {api_provider}")
 
 def get_prices(ticker: str, start_date: str, end_date: str) -> List[Price]:
     """
@@ -35,7 +35,7 @@ def get_prices(ticker: str, start_date: str, end_date: str) -> List[Price]:
         end_date: End date in YYYY-MM-DD format
 
     Returns:
-        List of Price objects
+        List of Price objects or empty list if data cannot be retrieved
     """
     try:
         return api_handler.get_prices(ticker, start_date, end_date)
@@ -45,18 +45,22 @@ def get_prices(ticker: str, start_date: str, end_date: str) -> List[Price]:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.get_prices(ticker, start_date, end_date)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get prices for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.get_prices(ticker, start_date, end_date)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get prices for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         else:
-            raise e
+            # 记录错误并返回空列表
+            print(f"Warning: Failed to get prices for {ticker}: {e}")
+            return []
 
 
 def get_financial_metrics(
@@ -75,7 +79,7 @@ def get_financial_metrics(
         limit: Maximum number of records to return
 
     Returns:
-        List of FinancialMetrics objects
+        List of FinancialMetrics objects or empty list if data cannot be retrieved
     """
     try:
         return api_handler.get_financial_metrics(ticker, end_date, period, limit)
@@ -85,18 +89,24 @@ def get_financial_metrics(
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.get_financial_metrics(ticker, end_date, period, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"\n\033[91mAPI ERROR\033[0m: Failed to get financial metrics for {ticker}: {e}")
+                print(f"\033[91mFALLBACK ERROR\033[0m: {fallback_error}")
+                return []
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.get_financial_metrics(ticker, end_date, period, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"\n\033[91mAPI ERROR\033[0m: Failed to get financial metrics for {ticker}: {e}")
+                print(f"\033[91mFALLBACK ERROR\033[0m: {fallback_error}")
+                return []
         else:
-            raise e
+            # 记录错误并返回空列表
+            print(f"\n\033[91mAPI ERROR\033[0m: Failed to get financial metrics for {ticker}: {e}")
+            return []
 
 
 def search_line_items(
@@ -117,7 +127,7 @@ def search_line_items(
         limit: Maximum number of records to return
 
     Returns:
-        List of LineItem objects
+        List of LineItem objects or empty list if data cannot be retrieved
     """
     try:
         return api_handler.search_line_items(ticker, line_items, end_date, period, limit)
@@ -127,18 +137,22 @@ def search_line_items(
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.search_line_items(ticker, line_items, end_date, period, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to search line items for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.search_line_items(ticker, line_items, end_date, period, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to search line items for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         else:
-            raise e
+            # 记录错误并返回空列表
+            print(f"Warning: Failed to search line items for {ticker}: {e}")
+            return []
 
 
 def get_insider_trades(
@@ -157,7 +171,7 @@ def get_insider_trades(
         limit: Maximum number of records to return
 
     Returns:
-        List of InsiderTrade objects
+        List of InsiderTrade objects or empty list if data cannot be retrieved
     """
     try:
         return api_handler.get_insider_trades(ticker, end_date, start_date, limit)
@@ -167,18 +181,22 @@ def get_insider_trades(
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.get_insider_trades(ticker, end_date, start_date, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get insider trades for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.get_insider_trades(ticker, end_date, start_date, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get insider trades for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         else:
-            raise e
+            # 记录错误并返回空列表
+            print(f"Warning: Failed to get insider trades for {ticker}: {e}")
+            return []
 
 
 def get_company_news(
@@ -197,7 +215,7 @@ def get_company_news(
         limit: Maximum number of records to return
 
     Returns:
-        List of CompanyNews objects
+        List of CompanyNews objects or empty list if data cannot be retrieved
     """
     try:
         return api_handler.get_company_news(ticker, end_date, start_date, limit)
@@ -207,18 +225,22 @@ def get_company_news(
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.get_company_news(ticker, end_date, start_date, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get company news for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.get_company_news(ticker, end_date, start_date, limit)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回空列表
+                print(f"Warning: Failed to get company news for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return []
         else:
-            raise e
+            # 记录错误并返回空列表
+            print(f"Warning: Failed to get company news for {ticker}: {e}")
+            return []
 
 
 def get_market_cap(
@@ -243,18 +265,22 @@ def get_market_cap(
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINNHUB)
                 return fallback_handler.get_market_cap(ticker, end_date)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回None
+                print(f"Warning: Failed to get market cap for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return None
         elif api_provider == ApiProvider.FINNHUB:
             try:
                 fallback_handler = ApiFactory.get_handler(ApiProvider.FINANCIAL_DATASETS)
                 return fallback_handler.get_market_cap(ticker, end_date)
-            except Exception:
-                # If both APIs fail, re-raise the original exception
-                raise e
+            except Exception as fallback_error:
+                # 如果两个API都失败，记录错误并返回None
+                print(f"Warning: Failed to get market cap for {ticker}: {e}. Fallback also failed: {fallback_error}")
+                return None
         else:
-            raise e
+            # 记录错误并返回None
+            print(f"Warning: Failed to get market cap for {ticker}: {e}")
+            return None
 
 
 def prices_to_df(prices: List[Price]) -> pd.DataFrame:

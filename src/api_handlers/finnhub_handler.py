@@ -119,7 +119,13 @@ class FinnhubApiHandler(BaseApiHandler):
         if ratios_response.status_code != 200:
             raise Exception(f"Error fetching ratios: {ticker} - {ratios_response.status_code} - {ratios_response.text}")
 
-        ratios_data = ratios_response.json()
+        # 安全地解析JSON，处理空响应
+        try:
+            ratios_data = ratios_response.json()
+        except Exception as e:
+            print(f"\n\033[91mFINNHUB ERROR\033[0m: Failed to parse JSON for {ticker} financial ratios: {e}")
+            print(f"Response content: {ratios_response.content[:200]}...")
+            ratios_data = {}
 
         # Convert Finnhub data to our FinancialMetrics model
         financial_metrics = []
@@ -186,7 +192,13 @@ class FinnhubApiHandler(BaseApiHandler):
         if response.status_code != 200:
             raise Exception(f"Error fetching financials: {ticker} - {response.status_code} - {response.text}")
 
-        data = response.json()
+        # 安全地解析JSON
+        try:
+            data = response.json()
+        except Exception as e:
+            print(f"\n\033[91mFINNHUB ERROR\033[0m: Failed to parse JSON for {ticker} financials: {e}")
+            print(f"Response content: {response.content[:200]}...")
+            data = {}
 
         # Convert Finnhub data to our LineItem model
         line_item_results = []
@@ -254,7 +266,13 @@ class FinnhubApiHandler(BaseApiHandler):
         if response.status_code != 200:
             raise Exception(f"Error fetching insider trades: {ticker} - {response.status_code} - {response.text}")
 
-        data = response.json()
+        # 安全地解析JSON
+        try:
+            data = response.json()
+        except Exception as e:
+            print(f"\n\033[91mFINNHUB ERROR\033[0m: Failed to parse JSON for {ticker} insider trades: {e}")
+            print(f"Response content: {response.content[:200]}...")
+            data = {}
 
         # Convert Finnhub data to our InsiderTrade model
         insider_trades = []
@@ -323,7 +341,13 @@ class FinnhubApiHandler(BaseApiHandler):
         if response.status_code != 200:
             raise Exception(f"Error fetching company news: {ticker} - {response.status_code} - {response.text}")
 
-        news_data = response.json()
+        # 安全地解析JSON
+        try:
+            news_data = response.json()
+        except Exception as e:
+            print(f"\n\033[91mFINNHUB ERROR\033[0m: Failed to parse JSON for {ticker} company news: {e}")
+            print(f"Response content: {response.content[:200]}...")
+            news_data = []
 
         # Convert Finnhub data to our CompanyNews model
         company_news = []
@@ -368,7 +392,13 @@ class FinnhubApiHandler(BaseApiHandler):
             print(f"Error fetching company profile: {ticker} - {response.status_code}")
             return None
 
-        profile_data = response.json()
+        # 安全地解析JSON
+        try:
+            profile_data = response.json()
+        except Exception as e:
+            print(f"\n\033[91mFINNHUB ERROR\033[0m: Failed to parse JSON for {ticker} company profile: {e}")
+            print(f"Response content: {response.content[:200]}...")
+            return None
 
         # Get market cap from profile
         market_cap = profile_data.get("marketCapitalization")

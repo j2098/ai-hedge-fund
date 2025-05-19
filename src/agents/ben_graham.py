@@ -32,39 +32,68 @@ def ben_graham_agent(state: AgentState):
     graham_analysis = {}
 
     for ticker in tickers:
-        progress.update_status("ben_graham_agent", ticker, "Fetching financial metrics")
-        metrics = get_financial_metrics(ticker, end_date, period="annual", limit=10)
+        try:
+            progress.update_status("ben_graham_agent", ticker, "Fetching financial metrics")
+            metrics = get_financial_metrics(ticker, end_date, period="annual", limit=10)
 
-        progress.update_status("ben_graham_agent", ticker, "Gathering financial line items")
-        financial_line_items = search_line_items(ticker, ["earnings_per_share", "revenue", "net_income", "book_value_per_share", "total_assets", "total_liabilities", "current_assets", "current_liabilities", "dividends_and_other_cash_distributions", "outstanding_shares"], end_date, period="annual", limit=10)
+            progress.update_status("ben_graham_agent", ticker, "Gathering financial line items")
+            financial_line_items = search_line_items(ticker, ["earnings_per_share", "revenue", "net_income", "book_value_per_share", "total_assets", "total_liabilities", "current_assets", "current_liabilities", "dividends_and_other_cash_distributions", "outstanding_shares"], end_date, period="annual", limit=10)
 
-        progress.update_status("ben_graham_agent", ticker, "Getting market cap")
-        market_cap = get_market_cap(ticker, end_date)
+            progress.update_status("ben_graham_agent", ticker, "Getting market cap")
+            market_cap = get_market_cap(ticker, end_date)
 
-        # Perform sub-analyses
-        progress.update_status("ben_graham_agent", ticker, "Analyzing earnings stability")
-        earnings_analysis = analyze_earnings_stability(metrics, financial_line_items)
+            # 检查是否有足够的数据进行分析
+            if not metrics or not financial_line_items:
+                print(f"Warning: Insufficient data for {ticker}, skipping detailed analysis")
+                # 创建一个默认的中性分析
+                analysis_data[ticker] = {
+                    "signal": "neutral",
+                    "score": 0,
+                    "max_score": 15,
+                    "earnings_analysis": {"score": 0, "details": "Insufficient data for analysis"},
+                    "strength_analysis": {"score": 0, "details": "Insufficient data for analysis"},
+                    "valuation_analysis": {"score": 0, "details": "Insufficient data for analysis"},
+                    "insufficient_data": True
+                }
+                continue
 
-        progress.update_status("ben_graham_agent", ticker, "Analyzing financial strength")
-        strength_analysis = analyze_financial_strength(financial_line_items)
+            # Perform sub-analyses
+            progress.update_status("ben_graham_agent", ticker, "Analyzing earnings stability")
+            earnings_analysis = analyze_earnings_stability(metrics, financial_line_items)
 
-        progress.update_status("ben_graham_agent", ticker, "Analyzing Graham valuation")
-        valuation_analysis = analyze_valuation_graham(financial_line_items, market_cap)
+            progress.update_status("ben_graham_agent", ticker, "Analyzing financial strength")
+            strength_analysis = analyze_financial_strength(financial_line_items)
 
-        # Aggregate scoring
-        total_score = earnings_analysis["score"] + strength_analysis["score"] + valuation_analysis["score"]
-        max_possible_score = 15  # total possible from the three analysis functions
+            progress.update_status("ben_graham_agent", ticker, "Analyzing Graham valuation")
+            valuation_analysis = analyze_valuation_graham(financial_line_items, market_cap)
 
-        # Map total_score to signal
-        if total_score >= 0.7 * max_possible_score:
-            signal = "bullish"
-        elif total_score <= 0.3 * max_possible_score:
-            signal = "bearish"
-        else:
-            signal = "neutral"
+            # Aggregate scoring
+            total_score = earnings_analysis["score"] + strength_analysis["score"] + valuation_analysis["score"]
+            max_possible_score = 15  # total possible from the three analysis functions
 
-        analysis_data[ticker] = {"signal": signal, "score": total_score, "max_score": max_possible_score, "earnings_analysis": earnings_analysis, "strength_analysis": strength_analysis, "valuation_analysis": valuation_analysis}
+            # Map total_score to signal
+            if total_score >= 0.7 * max_possible_score:
+                signal = "bullish"
+            elif total_score <= 0.3 * max_possible_score:
+                signal = "bearish"
+            else:
+                signal = "neutral"
 
+            analysis_data[ticker] = {"signal": signal, "score": total_score, "max_score": max_possible_score, "earnings_analysis": earnings_analysis, "strength_analysis": strength_analysis, "valuation_analysis": valuation_analysis}
+        except Exception as e:
+            print(f"Error analyzing {ticker}: {e}")
+            # 创建一个默认的中性分析
+            analysis_data[ticker] = {
+                "signal": "neutral",
+                "score": 0,
+                "max_score": 15,
+                "earnings_analysis": {"score": 0, "details": f"Error during analysis: {e}"},
+                "strength_analysis": {"score": 0, "details": "Analysis failed"},
+                "valuation_analysis": {"score": 0, "details": "Analysis failed"},
+                "error": str(e)
+            }
+
+        # 更新状态
         progress.update_status("ben_graham_agent", ticker, "Generating Ben Graham analysis")
         graham_output = generate_graham_output(
             ticker=ticker,
@@ -299,7 +328,7 @@ def generate_graham_output(
             3. Prefer stable earnings over multiple years.
             4. Consider dividend record for extra safety.
             5. Avoid speculative or high-growth assumptions; focus on proven metrics.
-            
+
             When providing your reasoning, be thorough and specific by:
             1. Explaining the key valuation metrics that influenced your decision the most (Graham Number, NCAV, P/E, etc.)
             2. Highlighting the specific financial strength indicators (current ratio, debt levels, etc.)
@@ -307,10 +336,10 @@ def generate_graham_output(
             4. Providing quantitative evidence with precise numbers
             5. Comparing current metrics to Graham's specific thresholds (e.g., "Current ratio of 2.5 exceeds Graham's minimum of 2.0")
             6. Using Benjamin Graham's conservative, analytical voice and style in your explanation
-            
+
             For example, if bullish: "The stock trades at a 35% discount to net current asset value, providing an ample margin of safety. The current ratio of 2.5 and debt-to-equity of 0.3 indicate strong financial position..."
             For example, if bearish: "Despite consistent earnings, the current price of $50 exceeds our calculated Graham Number of $35, offering no margin of safety. Additionally, the current ratio of only 1.2 falls below Graham's preferred 2.0 threshold..."
-                        
+
             Return a rational recommendation: bullish, bearish, or neutral, with a confidence level (0-100) and thorough reasoning.
             """,
             ),
