@@ -126,6 +126,64 @@ async def get_moomoo_status():
         message="Not connected to Moomoo API"
     )
 
+# 路由：获取持仓信息
+@app.get("/api/moomoo/positions", response_model=MoomooPositionsResponse)
+async def get_moomoo_positions():
+    """
+    获取Moomoo持仓信息
+    """
+    try:
+        if not MOOMOO_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="Moomoo API is not available. Please ensure Moomoo SDK is properly installed or located at the correct path."
+            )
+
+        # 创建模拟数据
+        positions = {
+            "AAPL": MoomooPosition(
+                ticker="AAPL",
+                quantity=10,
+                cost_price=150.0,
+                current_price=170.0,
+                market_value=1700.0,
+                profit_loss=200.0,
+                profit_loss_ratio=0.13,
+                today_profit_loss=20.0,
+                position_ratio=0.05
+            ),
+            "MSFT": MoomooPosition(
+                ticker="MSFT",
+                quantity=5,
+                cost_price=300.0,
+                current_price=320.0,
+                market_value=1600.0,
+                profit_loss=100.0,
+                profit_loss_ratio=0.07,
+                today_profit_loss=10.0,
+                position_ratio=0.04
+            )
+        }
+
+        account_info = MoomooAccountInfo(
+            power=100000.0,
+            total_assets=105000.0,
+            cash=101700.0,
+            market_value=3300.0,
+            frozen_cash=0.0,
+            available_cash=101700.0
+        )
+
+        return MoomooPositionsResponse(
+            positions=positions,
+            account_info=account_info
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get positions from Moomoo API: {str(e)}"
+        )
+
 # 路由：断开连接
 @app.post("/api/moomoo/disconnect", response_model=MoomooConnectionStatus)
 async def disconnect_moomoo():

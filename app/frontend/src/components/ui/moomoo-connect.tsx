@@ -90,7 +90,21 @@ export function MoomooConnect() {
       const response = await fetch("/api/moomoo/positions");
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch positions: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error("Error response text:", errorText);
+
+        let errorDetail = "Failed to fetch positions";
+        try {
+          // 尝试解析错误响应为JSON
+          const errorData = JSON.parse(errorText);
+          if (errorData.detail) {
+            errorDetail = errorData.detail;
+          }
+        } catch (parseErr) {
+          console.error("Error parsing error response:", parseErr);
+        }
+
+        throw new Error(errorDetail);
       }
 
       const data: MoomooPositionsResponse = await response.json();
@@ -99,7 +113,17 @@ export function MoomooConnect() {
       setActiveTab("positions");
     } catch (err) {
       console.error("Error fetching positions:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === 'object' && err !== null) {
+        setError(JSON.stringify(err));
+      } else {
+        setError("Unknown error");
+      }
+      // 即使出错，也保持在positions标签页
+      if (connectionStatus.connected) {
+        setActiveTab("positions");
+      }
     } finally {
       setIsLoading(false);
     }
